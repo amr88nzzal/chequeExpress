@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+# real business data and third-party code: local reference only, never commit
+inputs/*
+!inputs/README.md
+# generated test artifacts
+spikes/**/*.pdf
+spikes/**/*.png
+.pnpm-store/

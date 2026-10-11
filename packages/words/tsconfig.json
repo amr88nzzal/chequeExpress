@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // The words package predates this flag and is covered by 54 tests; it is not rewritten just to satisfy it.
+    "noUncheckedIndexedAccess": false
+  },
+  "include": ["src", "test", "tools"]
+}

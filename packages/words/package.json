@@ -1,0 +1,12 @@
+{
+  "name": "@cheques/words",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Amount-in-words (tafqeet) for cheques. Pure functions, zero runtime dependencies.",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}
