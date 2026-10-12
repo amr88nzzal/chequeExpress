@@ -20,7 +20,7 @@ sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$TAG/" .env
 docker compose --env-file .env pull api
 # Database migrations run here as a separate step once they exist (C0-3).
 docker compose --env-file .env up -d --remove-orphans
-PORT="$(grep -E '^GATEWAY_PORT=' .env | cut -d= -f2 || true)"; PORT="${PORT:-3600}"
+PORT="$(grep -E '^PORT=' .env | cut -d= -f2 || true)"; PORT="${PORT:-3650}"
 for i in $(seq 1 30); do
   if curl -fsS "http://127.0.0.1:${PORT}/health/ready" >/dev/null; then
     echo "ready"; curl -fsS "http://127.0.0.1:${PORT}/health/live"; echo; exit 0

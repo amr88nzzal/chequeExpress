@@ -1,6 +1,8 @@
 import { createApp } from './app.ts';
+import { loadConfig } from './config.ts';
 
-const port = Number(process.env['PORT'] ?? 3000);
-createApp().listen(port, () => {
-  console.log(JSON.stringify({ msg: 'api listening', port }));
+const config = loadConfig();
+createApp().listen(config.port, () => {
+  // never log the token or the database URL
+  console.log(JSON.stringify({ msg: 'api listening', port: config.port }));
 });

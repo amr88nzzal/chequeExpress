@@ -1,0 +1,22 @@
+{
+  "name": "@cheques/cheque-render",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Renders cheque data to a PDF sized exactly to the cheque (mm), text only, via Chromium (Playwright).",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "sample": "node tools/sample.ts"
+  },
+  "dependencies": {
+    "@fontsource/noto-naskh-arabic": "^5.3.0",
+    "playwright-core": "1.64.0"
+  },
+  "devDependencies": {
+    "@types/pngjs": "^6.0.5",
+    "pngjs": "^7.0.0",
+    "vitest": "^2.1.9"
+  }
+}

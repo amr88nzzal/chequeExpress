@@ -1,3 +1,4 @@
+# Rendered by the nginx image (envsubst, only API_* variables). ${API_PORT} comes from infra/.env (PORT).
 # TLS is terminated by the Cloudflare Tunnel (cloudflared) in front of this gateway,
 # so the gateway speaks plain HTTP on the private network only.
 server {
@@ -8,12 +9,12 @@ server {
 
   # Never expose liveness/readiness details beyond what the deploy script and tunnel need.
   location /health/ {
-    proxy_pass http://api:3000;
+    proxy_pass http://api:${API_PORT};
     include /etc/nginx/proxy_params.conf;
   }
 
   location /api/ {
-    proxy_pass http://api:3000/;
+    proxy_pass http://api:${API_PORT}/;
     include /etc/nginx/proxy_params.conf;
   }
 

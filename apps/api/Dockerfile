@@ -16,7 +16,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod --filter @cheques/api...
 
 FROM base AS runtime
-ENV NODE_ENV=production PORT=3000
+ENV NODE_ENV=production PORT=3650
 # Take the whole installed workspace from the deps stage (node_modules + symlinks), then add sources.
 # Not copying individual node_modules folders: packages without dependencies (e.g. shared) have none.
 COPY --from=deps /app ./
@@ -24,7 +24,7 @@ COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
 USER node
 WORKDIR /app/apps/api
-EXPOSE 3000
+EXPOSE 3650
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "src/main.ts"]
