@@ -9,3 +9,4 @@ tools
 reference
 pnpm-lock.yaml
 *.md
+apps/api/src/modules/system/db/db-types.ts

@@ -3,3 +3,7 @@ packages:
   - 'packages/*'
 allowBuilds:
   esbuild: true
+  # Optional native accelerators pulled in by Testcontainers (ssh2/docker-modem). They fall back to pure JS.
+  ssh2: false
+  cpu-features: false
+  protobufjs: false

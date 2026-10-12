@@ -11,6 +11,7 @@ export default tseslint.config(
       'inputs/**',
       'spikes/**',
       'reference/**',
+      'apps/api/src/modules/system/db/db-types.ts',
     ],
   },
   js.configs.recommended,

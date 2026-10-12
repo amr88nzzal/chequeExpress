@@ -7,13 +7,21 @@
     "dev": "node --watch src/main.ts",
     "start": "node src/main.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate": "node src/modules/system/db/migrate-cli.ts",
+    "db:types": "kysely-codegen --dialect postgres --camel-case --exclude-pattern schema_migrations --out-file src/modules/system/db/db-types.ts",
+    "bench:rls": "node src/modules/system/db/bench-rls.ts"
   },
   "dependencies": {
     "@cheques/shared": "workspace:*",
-    "express": "^5.0.0"
+    "express": "^5.0.0",
+    "kysely": "^0.29.6",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0"
+    "@testcontainers/postgresql": "^12.2.0",
+    "@types/express": "^5.0.0",
+    "@types/pg": "^8.23.1",
+    "kysely-codegen": "^0.20.0"
   }
 }
