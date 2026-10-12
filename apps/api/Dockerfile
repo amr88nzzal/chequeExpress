@@ -17,10 +17,9 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 
 FROM base AS runtime
 ENV NODE_ENV=production PORT=3000
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
-COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
-COPY package.json ./
+# Take the whole installed workspace from the deps stage (node_modules + symlinks), then add sources.
+# Not copying individual node_modules folders: packages without dependencies (e.g. shared) have none.
+COPY --from=deps /app ./
 COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
 USER node
