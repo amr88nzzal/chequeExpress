@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+.git
+inputs
+docs
+prompts
+spikes
+tools
+reference
+**/*.md
+.env
+.env.*

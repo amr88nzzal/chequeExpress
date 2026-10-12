@@ -1,0 +1,54 @@
+# Cheques stack. Run from this directory:  docker compose --env-file .env up -d
+# Images are pinned by tag; override IMAGE_TAG per deployment.
+name: cheques
+
+services:
+  postgres:
+    image: postgres:17-bookworm # multi-arch (arm64 + amd64)
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_OWNER_USER} # owner/migrations role; the app role is created in C0-3
+      POSTGRES_PASSWORD: ${POSTGRES_OWNER_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks: [internal]
+
+  api:
+    image: cheques-api:${IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [internal]
+
+  # worker (pg-boss) joins when the first queue exists (C1); render (Chromium) joins in C0-4.
+
+  gateway:
+    image: nginx:1.27-alpine # multi-arch
+    restart: unless-stopped
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./gateway/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
+    ports:
+      - '127.0.0.1:${GATEWAY_PORT:-8080}:8080' # loopback only; cloudflared reaches it locally
+    depends_on:
+      - api
+    networks: [internal]
+
+volumes:
+  pgdata:
+
+networks:
+  internal:
