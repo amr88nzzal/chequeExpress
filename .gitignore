@@ -1,0 +1,40 @@
+# Dependencies and caches (all of these must stay out of the repository)
+node_modules/
+.npm-cache/
+.pnpm-store/
+pnpm-store/
+.yarn/
+*.tsbuildinfo
+
+# Build output
+dist/
+build/
+coverage/
+*.log
+
+# Local scratch / analysis workspace (never committed)
+_scratch/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!*.pub
+
+# Editor and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test and tooling artifacts
+test-results/
+playwright-report/
+spikes/**/out/
+spikes/**/t0.pdf
+spikes/**/t1.pdf
+spikes/**/t0.png
+spikes/**/t1.png

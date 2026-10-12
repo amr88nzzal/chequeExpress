@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The npm cache lives inside the workspace on developer machines because the
+  # sandbox forbids writing outside it; keep CI consistent with that.
+  NPM_CONFIG_AUDIT: 'false'
+  NPM_CONFIG_FUND: 'false'
+
+jobs:
+  static:
+    name: Types, lint, format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install (lockfile)
+        run: npm ci --ignore-scripts
+      - name: Typecheck (root project)
+        run: npm run typecheck:root
+      - name: Typecheck (each workspace)
+        run: npm run typecheck --workspaces --if-present
+      - name: Lint
+        run: npm run lint
+      - name: Format check
+        run: npm run format:check
+
+  unit:
+    name: Unit tests (no database)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Test all workspaces
+        run: npm test
+      # The tafqeet package is the one place where a silent change is a money
+      # bug, so it is also run on the Node version the owners actually use.
+      - name: Tafqeet suite on Node 22 (explicit)
+        run: npx vitest run packages/words
+
+  integration:
+    name: Integration tests against PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: cheques_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      # The superuser is only used to create the roles and run migrations.
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/cheques_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Run migrations
+        run: npm run migrate --workspace @cheques/api --if-present
+      - name: Tenant-isolation and RLS tests
+        run: npm run test:isolation --workspace @cheques/api --if-present
+      - name: All integration tests
+        run: npx vitest run apps/api
+
+  build:
+    name: Build web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Build
+        run: npm run build --workspace @cheques/web --if-present
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-dist
+          path: apps/web/dist
+          if-no-files-found: ignore

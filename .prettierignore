@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+_intake
+_scratch
+spikes
+docs
+package-lock.json
+*.pdf
+*.bas

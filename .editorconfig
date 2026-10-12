@@ -1,0 +1,22 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false
+
+# Excel/VBA imports the .bas file and expects CRLF line endings.
+[*.bas]
+end_of_line = crlf
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[*.ps1]
+end_of_line = crlf
