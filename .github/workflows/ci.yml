@@ -5,7 +5,12 @@ on:
   pull_request:
 jobs:
   check:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The server is arm64, so the integration tests (Testcontainers + PostgreSQL 17) run on both.
+        os: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -14,11 +19,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-
-      # 💡 أضف خطوة تثبيت متصفحات Playwright هنا مع التبعيات
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
+      # cheque-render tests: Chromium (Playwright) + poppler to rasterise the PDF
+      - run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - run: pnpm --filter @cheques/cheque-render exec playwright-core install --with-deps chromium
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm format
