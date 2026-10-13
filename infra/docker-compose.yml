@@ -37,6 +37,15 @@ services:
 
   # worker (pg-boss) joins when the first queue exists (C1); render (Chromium) joins in C0-4.
 
+  # The UI. Static after the build; not published on the host, only the gateway.
+  web:
+    image: cheques-web:${IMAGE_TAG:-local}
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    networks: [internal]
+
   gateway:
     image: nginx:1.27-alpine # multi-arch
     restart: unless-stopped
@@ -50,6 +59,7 @@ services:
       - '${BIND_ADDRESS:-127.0.0.1}:${PORT:-3650}:8080' # loopback by default; cloudflared reaches it locally
     depends_on:
       - api
+      - web
     networks: [internal]
 
 volumes:

@@ -18,9 +18,11 @@ server {
     include /etc/nginx/proxy_params.conf;
   }
 
-  # Web app (apps/web) is added in C1; until then the gateway answers 404 for everything else.
+  # The web app (apps/web). Its own nginx handles SPA fallback and asset caching,
+  # so the gateway only forwards. Note: the UI still talks to a mock API client
+  # in-process; wiring it to /api/v1 is stage C1.
   location / {
-    default_type application/json;
-    return 404 '{"ok":false,"error":{"code":"NOT_FOUND","message":"Route not found"},"requestId":"$request_id"}';
+    proxy_pass http://web:80;
+    include /etc/nginx/proxy_params.conf;
   }
 }
