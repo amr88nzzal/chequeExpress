@@ -4,22 +4,18 @@
   "private": true,
   "type": "module",
   "description": "Multi-tenant cheque management with exact-size cheque printing",
+  "packageManager": "pnpm@11.7.0",
   "engines": {
     "node": ">=22.11.0"
   },
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
   "scripts": {
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "pnpm -r --if-present run typecheck",
     "typecheck:root": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node node_modules/vitest/vitest.mjs run",
-    "test:workspaces": "npm run test --workspaces --if-present",
-    "verify": "npm run typecheck:root && npm run lint && npm run format:check && npm test"
+    "verify": "pnpm run typecheck:root && pnpm run lint && pnpm run format:check && pnpm run test"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
