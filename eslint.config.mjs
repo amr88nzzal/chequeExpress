@@ -19,6 +19,7 @@ export default tseslint.config(
       '_scratch/**',
       'spikes/**',
       'docs/**',
+      'reference/**',
     ],
   },
   js.configs.recommended,

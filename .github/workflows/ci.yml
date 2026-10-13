@@ -10,53 +10,58 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  # The npm cache lives inside the workspace on developer machines because the
-  # sandbox forbids writing outside it; keep CI consistent with that.
-  NPM_CONFIG_AUDIT: 'false'
-  NPM_CONFIG_FUND: 'false'
-
 jobs:
   static:
     name: Types, lint, format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - name: Install (lockfile)
-        run: npm ci --ignore-scripts
+          cache: pnpm
+      # --ignore-scripts: no lifecycle script is needed and it keeps CI aligned
+      # with the documented local install.
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Typecheck (root project)
-        run: npm run typecheck:root
+        run: pnpm run typecheck:root
       - name: Typecheck (each workspace)
-        run: npm run typecheck --workspaces --if-present
+        run: pnpm -r --if-present run typecheck
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
       - name: Format check
-        run: npm run format:check
+        run: pnpm run format:check
 
   unit:
     name: Unit tests (no database)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - name: Test all workspaces
-        run: npm test
-      # The tafqeet package is the one place where a silent change is a money
-      # bug, so it is also named explicitly in the log.
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Test every workspace
+        run: pnpm run test
+      # The tafqeet suite is where a silent change becomes a money bug, so it is
+      # also named explicitly in the log.
       - name: Tafqeet suite (explicit)
         run: node node_modules/vitest/vitest.mjs run packages/words
 
   integration:
-    name: Integration tests against PostgreSQL
-    runs-on: ubuntu-latest
+    name: Integration tests on PostgreSQL (${{ matrix.os }})
+    # The server is arm64, so the RLS and tenant-isolation proofs run on both
+    # architectures. A green x86 run alone is not evidence for the production
+    # architecture (docs/CONVENTIONS.md 18).
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
     services:
       postgres:
         image: postgres:17
@@ -72,20 +77,24 @@ jobs:
           --health-timeout 5s
           --health-retries 20
     env:
-      # The superuser is only used to create the roles and run migrations.
-      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/cheques_test
+      # The superuser only creates the roles and runs the migrations; the tests
+      # themselves connect as the application role, which is NOT the owner and
+      # does NOT bypass RLS.
+      DATABASE_ADMIN_URL: postgres://postgres:postgres@127.0.0.1:5432/cheques_test
+      DATABASE_URL: postgres://cheques_app:cheques_app_dev_password@127.0.0.1:5432/cheques_test
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - name: Run migrations
-        run: npm run migrate --workspace @cheques/api --if-present
-      - name: Tenant-isolation and RLS tests
-        run: npm run test:isolation --workspace @cheques/api --if-present
-      - name: All integration tests
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Run migrations as the owner role
+        run: pnpm --filter @cheques/api run migrate
+      - name: Tenant-isolation acceptance test
+        run: pnpm --filter @cheques/api run test:isolation
+      - name: All API tests, including the RLS proof and the catalog super-test
         run: node node_modules/vitest/vitest.mjs run apps/api
 
   build:
@@ -93,13 +102,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci --ignore-scripts
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
       - name: Build
-        run: npm run build --workspace @cheques/web --if-present
+        run: pnpm --filter @cheques/web run build
       - uses: actions/upload-artifact@v4
         if: always()
         with:

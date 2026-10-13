@@ -5,6 +5,9 @@ _intake
 _scratch
 spikes
 docs
+reference
 package-lock.json
+pnpm-lock.yaml
 *.pdf
 *.bas
+*.md
