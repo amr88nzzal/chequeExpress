@@ -9,6 +9,10 @@ RUN npm install -g pnpm@11.7.0
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/web/package.json apps/web/
+# Scripts are NOT skipped here (unlike the api image): esbuild links its platform
+# binary and @swc/core loads its native binding through install-time scripts, and
+# the Vite build needs both. pnpm-workspace.yaml allowlists exactly those two, so
+# every other dependency's script stays blocked.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter @cheques/web...
 COPY apps/web ./apps/web

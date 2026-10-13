@@ -1,3 +1,17 @@
 packages:
   - 'packages/*'
   - 'apps/*'
+
+# Which dependencies may run install-time scripts.
+#
+# pnpm 11 replaced the old `onlyBuiltDependencies` list with this map, and it
+# fails the install with ERR_PNPM_IGNORED_BUILDS for any package that HAS a build
+# script and is not listed here. Two of our dependencies need theirs:
+#   - esbuild    links its platform binary (Vite's transformer)
+#   - @swc/core  loads its native binding (Vite's React plugin)
+# Without this the web image died at `pnpm install` with
+#   "[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: @swc/core@1.16.18, esbuild@0.21.5"
+# Everything not listed stays blocked, which is the point of the setting.
+allowBuilds:
+  esbuild: true
+  '@swc/core': true

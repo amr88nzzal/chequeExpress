@@ -24,6 +24,9 @@ COPY apps/api/package.json apps/api/
 COPY packages/shared/package.json packages/shared/
 # Production deps only. The workspace layout is kept (no `pnpm deploy`) because Node's
 # type stripping refuses .ts files that live under node_modules.
+# No --ignore-scripts: pnpm-workspace.yaml allowlists the only two dependencies
+# that need install-time scripts (esbuild, @swc/core) and blocks the rest, so the
+# api image gets a working esbuild instead of one whose postinstall never ran.
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod --filter @cheques/api...
 
