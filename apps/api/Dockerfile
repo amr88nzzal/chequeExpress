@@ -3,7 +3,19 @@
 # Multi-arch friendly (linux/arm64 first, linux/amd64 for development). No native deps today.
 FROM node:22-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH
-RUN npm install -g pnpm@12.11.2
+# `libatomic1` is not part of the slim image and pnpm's prebuilt binary can link
+# against it; without it `pnpm install` dies with exit 127 and
+#   "…/@pnpm/exe/pnpm: error while loading shared libraries: libatomic.so.1".
+# `apt-get update` is kept non-fatal so a transient mirror problem cannot block
+# the whole build over a package that is usually already present.
+RUN apt-get update -o Acquire::Retries=3 || echo "apt-get update failed; continuing" \
+ && apt-get install -y --no-install-recommends libatomic1 \
+ || echo "libatomic1 unavailable; continuing" \
+ && rm -rf /var/lib/apt/lists/*
+# The version MUST match `packageManager` in the root package.json. When they
+# disagree, pnpm sees the mismatch and downloads the other version's prebuilt
+# binary at install time — which is what selected the library-less binary above.
+RUN npm install -g pnpm@11.7.0
 WORKDIR /app
 
 FROM base AS deps
