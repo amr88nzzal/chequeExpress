@@ -1,0 +1,20 @@
+{
+  "name": "@cheques/cheque-render",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Exact-size cheque PDF rendering in millimetres with Arabic shaping and RTL ordering. Pure TypeScript, no browser.",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "bidi-js": "^1.1.0",
+    "harfbuzzjs": "^1.6.3",
+    "pdf-lib": "^1.17.1"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.5"
+  }
+}

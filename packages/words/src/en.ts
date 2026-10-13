@@ -1,8 +1,26 @@
 import type { EnglishNoun } from './currencies.ts';
 
 const SMALL = [
-  '', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen',
+  '',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
 ];
 const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
 const SCALES = ['', 'thousand', 'million', 'billion', 'trillion', 'quadrillion'];
@@ -14,7 +32,10 @@ const belowThousand = (v: number): string => {
   if (h > 0) parts.push(`${SMALL[h]} hundred`);
   if (r > 0) {
     if (r < 20) parts.push(SMALL[r]);
-    else parts.push(r % 10 === 0 ? TENS[Math.floor(r / 10)] : `${TENS[Math.floor(r / 10)]}-${SMALL[r % 10]}`);
+    else
+      parts.push(
+        r % 10 === 0 ? TENS[Math.floor(r / 10)] : `${TENS[Math.floor(r / 10)]}-${SMALL[r % 10]}`,
+      );
   }
   return parts.join(' ');
 };

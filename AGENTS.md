@@ -49,16 +49,17 @@ packages/cheque-render  توليد PDF بالمليمتر + تشكيل عربي
 
 هذه القيود تخصّ صندوق حماية DSH على Windows، وقد كلّفت تشخيصاً سابقاً — لا تُعِد اكتشافها:
 
-| القيد | الأثر | البديل المعتمد |
-|---|---|---|
-| عمليات فرعية بأنابيب stdio ممنوعة (`spawn EPERM`) | `node --test` بمعامله الافتراضي يفشل، وVitest بـ `pool: 'forks'` يفشل | `pool: 'threads'` في `vitest.config.ts`، أو تشغيل ملف الاختبار مباشرة |
-| `pnpm install` يفشل (`ERR_PNPM_STORE_DIR_OPEN_OPERATION_LOCK`) | لا pnpm workspaces محلياً | **npm workspaces** محلياً؛ pnpm يبقى الخيار في CI إن رغب الفريق |
-| npm يستدعي lifecycle scripts بعملية فرعية | `npm install` يفشل بـ `EPERM` | `npm install --ignore-scripts` |
-| الكتابة خارج مساحة العمل ممنوعة | `corepack enable`, `D:\`, `%APPDATA%`, `C:\Program Files` | كل الذاكن والـ store داخل مساحة العمل: `--cache .npm-cache` |
-| git عبر HTTPS يفشل (`schannel: SEC_E_NO_CREDENTIALS`) وSSH غير مُصرَّح للمفتاح الحالي | لا `git fetch/push` من داخل الصندوق | الدفع من جلسة بصلاحية أوسع أو من جهاز صاحب المشروع |
-| لا Docker ولا PostgreSQL ولا WSL عاملة | لا اختبار RLS ولا بناء arm64 محلياً | GitHub Actions (خدمة PostgreSQL + بناء الصور) |
-| Playwright لا يعمل (تنزيل المتصفح وإطلاقه) | لا اختبار متصفح ولا توليد PDF بـ Chromium | `packages/cheque-render` بمكتبة PDF صافية، واختبارات DOM عبر jsdom |
-| بيانات اعتماد GitHub | الرمز محفوظ في Windows Credential Manager (وليس في المستودع) | لا يُكتب في أي ملف ولا يُطبع في أي مخرَج |
+| القيد                                                                                 | الأثر                                                                                                                                                                  | البديل المعتمد                                                                              |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| عمليات فرعية بأنابيب stdio ممنوعة (`spawn EPERM`)                                     | `node --test` بمعامله الافتراضي يفشل، وVitest بـ `pool: 'forks'` يفشل                                                                                                  | `pool: 'threads'` في `vitest.config.mjs`، أو تشغيل ملف الاختبار مباشرة                      |
+| **Vitest لا يقلع محلياً بلا صلاحية موسّعة**                                           | Vite يبني ملف الإعداد بـ esbuild، وesbuild يُشغّل خدمته بعملية فرعية حتى في `buildSync` (جرّبنا shim لـ `Module._load` ففشل) → `failed to load config ... spawn EPERM` | شغّل `npm test` بصلاحية موسّعة (`danger-full-access`) محلياً. في CI يعمل بلا أي إعداد إضافي |
+| `pnpm install` يفشل (`ERR_PNPM_STORE_DIR_OPEN_OPERATION_LOCK`)                        | لا pnpm workspaces محلياً                                                                                                                                              | **npm workspaces** محلياً؛ pnpm يبقى الخيار في CI إن رغب الفريق                             |
+| npm يستدعي lifecycle scripts بعملية فرعية                                             | `npm install` يفشل بـ `EPERM`                                                                                                                                          | `npm install --ignore-scripts`                                                              |
+| الكتابة خارج مساحة العمل ممنوعة                                                       | `corepack enable`, `D:\`, `%APPDATA%`, `C:\Program Files`                                                                                                              | كل الذاكن والـ store داخل مساحة العمل: `--cache .npm-cache`                                 |
+| git عبر HTTPS يفشل (`schannel: SEC_E_NO_CREDENTIALS`) وSSH غير مُصرَّح للمفتاح الحالي | لا `git fetch/push` من داخل الصندوق                                                                                                                                    | الدفع من جلسة بصلاحية أوسع أو من جهاز صاحب المشروع                                          |
+| لا Docker ولا PostgreSQL ولا WSL عاملة                                                | لا اختبار RLS ولا بناء arm64 محلياً                                                                                                                                    | GitHub Actions (خدمة PostgreSQL + بناء الصور)                                               |
+| Playwright لا يعمل (تنزيل المتصفح وإطلاقه)                                            | لا اختبار متصفح ولا توليد PDF بـ Chromium                                                                                                                              | `packages/cheque-render` بمكتبة PDF صافية، واختبارات DOM عبر jsdom                          |
+| بيانات اعتماد GitHub                                                                  | الرمز محفوظ في Windows Credential Manager (وليس في المستودع)                                                                                                           | لا يُكتب في أي ملف ولا يُطبع في أي مخرَج                                                    |
 
 ## النشر
 

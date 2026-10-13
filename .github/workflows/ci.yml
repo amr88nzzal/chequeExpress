@@ -50,9 +50,9 @@ jobs:
       - name: Test all workspaces
         run: npm test
       # The tafqeet package is the one place where a silent change is a money
-      # bug, so it is also run on the Node version the owners actually use.
-      - name: Tafqeet suite on Node 22 (explicit)
-        run: npx vitest run packages/words
+      # bug, so it is also named explicitly in the log.
+      - name: Tafqeet suite (explicit)
+        run: node node_modules/vitest/vitest.mjs run packages/words
 
   integration:
     name: Integration tests against PostgreSQL
@@ -86,7 +86,7 @@ jobs:
       - name: Tenant-isolation and RLS tests
         run: npm run test:isolation --workspace @cheques/api --if-present
       - name: All integration tests
-        run: npx vitest run apps/api
+        run: node node_modules/vitest/vitest.mjs run apps/api
 
   build:
     name: Build web

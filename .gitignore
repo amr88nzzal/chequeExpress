@@ -15,6 +15,17 @@ coverage/
 # Local scratch / analysis workspace (never committed)
 _scratch/
 
+# Workspace lockfiles: the single source of truth is the root package-lock.json.
+# A per-workspace lockfile makes `npm ci` at the root diverge from what the
+# workspace actually installed, so they are never committed.
+apps/*/package-lock.json
+packages/*/package-lock.json
+
+# Throwaway probes written while diagnosing library behaviour.
+probe*.mjs
+packages/*/probe*.mjs
+packages/*/tools/probe-*.ts
+
 # Environment and secrets
 .env
 .env.*

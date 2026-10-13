@@ -6,6 +6,10 @@
   "description": "Amount-in-words (tafqeet) for cheques. Pure functions, zero runtime dependencies.",
   "main": "src/index.ts",
   "scripts": {
-    "test": "node --test \"test/**/*.test.ts\""
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.5"
   }
 }

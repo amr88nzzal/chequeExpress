@@ -1,0 +1,36 @@
+{
+  "name": "@cheques/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "ChequeExpress HTTP API (multi-tenant, RLS-enforced PostgreSQL access)",
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "scripts": {
+    "dev": "node --watch src/main.ts",
+    "start": "node src/main.ts",
+    "test": "vitest run",
+    "test:isolation": "vitest run -t \"tenant isolation\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "migrate": "node src/db/migrate-cli.ts",
+    "seed": "node src/db/seed-cli.ts"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "kysely": "^0.28.2",
+    "pg": "^8.16.3",
+    "pino": "^9.5.0",
+    "pino-http": "^10.3.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.1",
+    "@types/pg": "^8.11.10",
+    "@types/supertest": "^6.0.2",
+    "supertest": "^7.0.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.5"
+  }
+}

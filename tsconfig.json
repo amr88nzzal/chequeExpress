@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
   "include": ["packages/words/**/*.ts", "packages/cheque-render/**/*.ts", "apps/api/**/*.ts"],
-  "exclude": ["**/node_modules/**", "**/dist/**", "spikes/**", "_intake/**", "_scratch/**"]
+  "exclude": ["**/node_modules/**", "**/dist/**", "spikes/**", "_scratch/**"]
 }

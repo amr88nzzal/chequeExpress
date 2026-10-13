@@ -17,7 +17,6 @@ const numericFractionNounAr = (fraction: bigint, noun: ArabicNoun): string => {
   return tail >= 3 && tail <= 10 ? noun.plural : noun.singular;
 };
 
-
 /**
  * numeric: "... و 515 فلس"          (the style the current Excel sheet uses)
  * words:   "... وخمسمائة وخمسة عشر فلسا"
@@ -30,7 +29,11 @@ export type AmountWordsOptions = {
   currency: CurrencyWords;
   lang: Lang;
   fractionStyle?: FractionStyle;
-  /** Append the closing word ("فقط" / prefix "Only"). Default true. */
+  /**
+   * Append the closing word ("فقط" / prefix "Only"). Defaults to false: per
+   * DESIGN.md §6 the closing phrase is not part of the tafqeet output, it is
+   * appended by the per-bank print template.
+   */
   closing?: boolean;
 };
 
@@ -39,7 +42,7 @@ export const amountToWords = ({
   currency,
   lang,
   fractionStyle = 'numeric',
-  closing = true,
+  closing = false,
 }: AmountWordsOptions): string => {
   const { integer, fraction } = parseAmount(amount, currency.minorDigits);
   const hasFraction = fraction > 0n;
@@ -57,7 +60,9 @@ export const amountToWords = ({
     let text = mainPart;
     if (fracPart) {
       if (!mainPart) text = fracPart;
-      else text = fractionStyle === 'numeric' ? `${mainPart} و ${fracPart}` : `${mainPart} و${fracPart}`;
+      else
+        text =
+          fractionStyle === 'numeric' ? `${mainPart} و ${fracPart}` : `${mainPart} و${fracPart}`;
     }
     return closing ? `${text} فقط` : text;
   }

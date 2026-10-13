@@ -1,0 +1,61 @@
+/*
+ * RTL-first app styles (CONVENTIONS.md §16).
+ *
+ * Rules of this file:
+ *   1. logical properties only — `margin-inline-start`, `padding-inline`,
+ *      `border-inline-start`, `text-align: start`. Never `left`/`right`.
+ *   2. directional icons are mirrored from the `dir` attribute, not by shipping
+ *      two icons.
+ */
+
+.app-root {
+  min-block-size: 100vh;
+}
+
+/* Amounts, cheque numbers and account masks read left-to-right in both
+   languages, and tabular figures keep columns aligned. */
+.numeric-cell {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  text-align: start;
+  unicode-bidi: isolate;
+}
+
+.money-field input {
+  font-variant-numeric: tabular-nums;
+  text-align: start;
+  unicode-bidi: isolate;
+}
+
+/* Inline icon + label pairs (used instead of physical left/right slots). */
+.button-content {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+/* Horizontal chevrons point along the reading direction. */
+[dir='rtl'] .directional-icon {
+  transform: scaleX(-1);
+}
+
+.nav-section-title {
+  margin-block: var(--mantine-spacing-sm) var(--mantine-spacing-xs);
+  margin-inline-start: var(--mantine-spacing-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/*
+ * Print calibration card: a physical 6-inch cheque placeholder. The block is
+ * centred with logical margins so the same rule works in both directions.
+ */
+.cheque-preview-sheet {
+  inline-size: min(100%, 152.4mm);
+  block-size: 70mm;
+  margin-inline: auto;
+  border: 1px dashed var(--mantine-color-gray-4);
+  border-radius: var(--mantine-radius-sm);
+  padding-inline: var(--mantine-spacing-md);
+  padding-block: var(--mantine-spacing-sm);
+}

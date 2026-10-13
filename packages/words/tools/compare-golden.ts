@@ -8,7 +8,9 @@ if (!file) {
   process.exit(2);
 }
 const { total, mismatches } = compareGolden(readGolden(readFileSync(file, 'utf8')));
-console.log(`cases: ${total}  identical: ${total - mismatches.length}  different: ${mismatches.length}`);
+console.log(
+  `cases: ${total}  identical: ${total - mismatches.length}  different: ${mismatches.length}`,
+);
 for (const m of mismatches.slice(0, 200)) {
   console.log(`\n${m.amount}\n  vba : ${m.expected}\n  ours: ${m.actual}`);
 }

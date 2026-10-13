@@ -2,6 +2,9 @@ import { WordsError } from './errors.ts';
 
 export const MAX_INTEGER_DIGITS = 18;
 
+/** Upper bound for a currency's minor-unit digits; beyond this no currency fits. */
+export const MAX_MINOR_DIGITS = 6;
+
 export type ParsedAmount = {
   /** Whole part (main currency unit). */
   integer: bigint;
@@ -18,8 +21,17 @@ export type ParsedAmount = {
  * unless the extra digits are zeros.
  */
 export const parseAmount = (input: string, minorDigits: number): ParsedAmount => {
+  if (!Number.isInteger(minorDigits) || minorDigits < 0 || minorDigits > MAX_MINOR_DIGITS) {
+    throw new WordsError(
+      'INVALID_AMOUNT',
+      `minorDigits must be an integer between 0 and ${MAX_MINOR_DIGITS}, got ${minorDigits}`,
+    );
+  }
   if (typeof input !== 'string' || !/^\d+(\.\d+)?$/.test(input.trim())) {
-    throw new WordsError('INVALID_AMOUNT', `Amount must be a plain non-negative decimal string: "${input}"`);
+    throw new WordsError(
+      'INVALID_AMOUNT',
+      `Amount must be a plain non-negative decimal string: "${input}"`,
+    );
   }
   const [intRaw, fracRaw = ''] = input.trim().split('.');
 
@@ -30,7 +42,10 @@ export const parseAmount = (input: string, minorDigits: number): ParsedAmount =>
 
   const frac = fracRaw.length > minorDigits ? fracRaw.replace(/0+$/, '') : fracRaw;
   if (frac.length > minorDigits) {
-    throw new WordsError('TOO_MANY_DECIMALS', `Currency allows ${minorDigits} decimal digits, got "${fracRaw}"`);
+    throw new WordsError(
+      'TOO_MANY_DECIMALS',
+      `Currency allows ${minorDigits} decimal digits, got "${fracRaw}"`,
+    );
   }
 
   const padded = frac.padEnd(minorDigits, '0');

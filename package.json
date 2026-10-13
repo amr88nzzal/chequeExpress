@@ -17,7 +17,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run",
+    "test": "node node_modules/vitest/vitest.mjs run",
     "test:workspaces": "npm run test --workspaces --if-present",
     "verify": "npm run typecheck:root && npm run lint && npm run format:check && npm test"
   },
