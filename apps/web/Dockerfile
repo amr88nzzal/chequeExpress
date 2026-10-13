@@ -16,6 +16,11 @@ COPY apps/web/package.json apps/web/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter @cheques/web...
 COPY apps/web ./apps/web
+# apps/web/tsconfig.json extends the repository root config, and Vite resolves
+# `extends` while transforming. Without this line the build died with:
+#   [vite:esbuild] failed to resolve "extends":"../../tsconfig.base.json"
+# The api image does not need it at runtime because only `tsc` reads it there.
+COPY tsconfig.base.json ./
 RUN pnpm --filter @cheques/web run build
 
 # The SPA is static; nginx serves it and falls back to index.html so the
