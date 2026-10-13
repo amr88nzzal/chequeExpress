@@ -36,25 +36,35 @@ export type Decimal18_4 = string;
  */
 export type Timestamptz = Date;
 
+/**
+ * Column names here are camelCase, NOT snake_case.
+ *
+ * `CamelCasePlugin` is registered on every Kysely instance (see `db/pool.ts`), so
+ * Kysely addresses a column by its camelCase name and the plugin emits the
+ * snake_case SQL identifier. A type that declares `tenant_id` therefore does not
+ * typecheck against the query builder, and — worse — `selectAll()` and the result
+ * mapping disagree with the runtime shape. `EXPECTED_COLUMNS` below keeps the real
+ * SQL names because it is compared against `information_schema`.
+ */
 export interface DemoItemsTable {
   id: Generated<string>;
-  tenant_id: string;
+  tenantId: string;
   label: string;
   amount: Decimal18_4;
   currency: string;
   status: Generated<string>;
-  created_at: Generated<Timestamptz>;
+  createdAt: Generated<Timestamptz>;
   /** Written from the injected clock (`ctx.clock`), never from `new Date()`. */
-  updated_at: Generated<Timestamptz>;
+  updatedAt: Generated<Timestamptz>;
 }
 
 export interface DemoAttachmentsTable {
   id: Generated<string>;
-  tenant_id: string;
-  demo_item_id: string;
-  file_name: string;
-  byte_size: number;
-  created_at: Generated<Timestamptz>;
+  tenantId: string;
+  demoItemId: string;
+  fileName: string;
+  byteSize: number;
+  createdAt: Generated<Timestamptz>;
 }
 
 export interface Database {

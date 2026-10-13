@@ -27,6 +27,15 @@ describe.skipIf(!hasDatabase)('db types mirror the migrations', () => {
   let adminPool: pg.Pool;
   let appPool: pg.Pool;
 
+  /**
+   * The keys of `EXPECTED_COLUMNS` are Kysely table names in camelCase (that is
+   * how `CamelCasePlugin` addresses them), while `information_schema` speaks the
+   * real snake_case SQL names. An earlier revision compared the two directly, so
+   * every lookup returned zero rows.
+   */
+  const toSqlTableName = (kyselyName: string): string =>
+    kyselyName.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+
   beforeAll(async () => {
     adminPool = createAdminPool();
     await migrateAndSeed(adminPool);
@@ -46,7 +55,7 @@ describe.skipIf(!hasDatabase)('db types mirror the migrations', () => {
            from information_schema.columns
           where table_schema = 'public' and table_name = $1
           order by column_name`,
-        [table],
+        [toSqlTableName(table)],
       );
 
       expect(rows.map((row) => row.column_name)).toEqual([...expected].sort());
@@ -57,9 +66,11 @@ describe.skipIf(!hasDatabase)('db types mirror the migrations', () => {
     const { rows } = await appPool.query<{ table_name: string }>(
       `select table_name from information_schema.tables
         where table_schema = 'public' and table_name = any($1::text[])`,
-      [Object.keys(EXPECTED_COLUMNS)],
+      [Object.keys(EXPECTED_COLUMNS).map(toSqlTableName)],
     );
 
-    expect(rows.map((row) => row.table_name).sort()).toEqual(Object.keys(EXPECTED_COLUMNS).sort());
+    expect(rows.map((row) => row.table_name).sort()).toEqual(
+      Object.keys(EXPECTED_COLUMNS).map(toSqlTableName).sort(),
+    );
   });
 });

@@ -30,9 +30,14 @@ if (SKIP_REASON !== null) {
   console.warn(`[rls-proof] SKIPPED: ${SKIP_REASON}`);
 }
 
+/**
+ * Raw SQL goes through a Kysely instance with `CamelCasePlugin`, which maps the
+ * result columns back to camelCase. The SQL says `tenant_id`; the yielded row
+ * carries `tenantId`.
+ */
 interface ItemRowView {
   id: string;
-  tenant_id: string;
+  tenantId: string;
 }
 
 interface SettingRow {
@@ -75,8 +80,11 @@ describe.skipIf(!hasDatabase)('RLS proof: the policy filters, not the query', ()
 
     expect(rowsA.rows.length).toBeGreaterThan(0);
     expect(rowsB.rows.length).toBeGreaterThan(0);
-    expect(rowsA.rows.every((row) => row.tenant_id.toLowerCase() === TENANT_A.tenantId)).toBe(true);
-    expect(rowsB.rows.every((row) => row.tenant_id.toLowerCase() === TENANT_B.tenantId)).toBe(true);
+    // `CamelCasePlugin` maps the raw result columns back to camelCase, so this
+    // reads `tenantId`. An earlier revision read `row.tenant_id` and every access
+    // was `undefined` (`Cannot read properties of undefined`).
+    expect(rowsA.rows.every((row) => row.tenantId.toLowerCase() === TENANT_A.tenantId)).toBe(true);
+    expect(rowsB.rows.every((row) => row.tenantId.toLowerCase() === TENANT_B.tenantId)).toBe(true);
   });
 
   it('a cross-tenant id is invisible even when it is supplied explicitly', async () => {

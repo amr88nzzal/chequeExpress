@@ -105,9 +105,15 @@ describe.skipIf(!hasDatabase)('catalog super-test: every public table is tenant 
       qual: string | null;
       withcheck: string | null;
     }>(
+      // `pg_policies` already exposes the policy expressions as `qual` and
+      // `withcheck`. An earlier revision called
+      // `pg_get_expr(polqual, polrelid)` / `pg_get_expr(polwithcheck, polrelid)`,
+      // which are columns of the pg_policy CATALOG TABLE and not of this view, so
+      // PostgreSQL 17 rejected the statement with
+      // `column "polqual" does not exist` and the query returned nothing.
       `select tablename,
-              pg_get_expr(polqual, polrelid)      as qual,
-              pg_get_expr(polwithcheck, polrelid) as withcheck
+              qual,
+              with_check as withcheck
          from pg_policies
         where schemaname = 'public'
           and tablename in ('demo_items', 'demo_attachments')

@@ -124,15 +124,19 @@ export function createDemoItemService(deps: DemoItemServiceDeps): DemoItemServic
 function toDemoItem(row: DemoItemRow): DemoItem {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    // camelCase, because `CamelCasePlugin` maps the result back (CONVENTIONS.md 4).
+    // An earlier revision read `row.tenant_id` / `row.created_at` here, so the
+    // tenant id and every timestamp came back `undefined` and the response mapper
+    // threw. Only the INSERT path surfaced it, as a 500 on POST.
+    tenantId: row.tenantId,
     label: row.label,
     // `pg` returns numeric as a string; normalise the textual shape rather than
     // pass through whatever the driver produced.
     amount: formatDecimalAmount(String(row.amount)),
     currency: row.currency,
     status: row.status,
-    createdAt: toIsoString(row.created_at),
-    updatedAt: toIsoString(row.updated_at),
+    createdAt: toIsoString(row.createdAt),
+    updatedAt: toIsoString(row.updatedAt),
   };
 }
 

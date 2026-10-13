@@ -16,32 +16,31 @@
 -- The application still generates its own UUIDv7 (`src/http/ids.ts`) and sends it
 -- explicitly; this default is the fallback path, and it produces *ordered* ids,
 -- unlike `gen_random_uuid()`.
+--
+-- NO pgcrypto: an earlier revision called `gen_random_bytes(10)`, which lives in
+-- the pgcrypto extension. Nothing in the migrations creates that extension, so
+-- the default raised `42883 undefined_function` for every insert that did not
+-- supply an id — the HTTP acceptance path returned 500. That was found by running
+-- the migrations against a real PostgreSQL 17 server. The randomness now comes
+-- from `gen_random_uuid()`, which has been in core since PostgreSQL 13, and the
+-- bytes are assembled as hex characters so there is no byte-shuffling either.
 
 CREATE OR REPLACE FUNCTION app_uuid_v7()
 RETURNS uuid
-LANGUAGE plpgsql
+LANGUAGE sql
 VOLATILE
-PARALLEL SAFE
 AS $$
-DECLARE
-  unix_ts_ms bigint;
-  rand_bytes bytea;
-BEGIN
-  unix_ts_ms := floor(extract(epoch FROM clock_timestamp()) * 1000)::bigint;
-  rand_bytes := gen_random_bytes(10);
-
-  rand_bytes := set_byte(rand_bytes, 0, ((unix_ts_ms >> 40) & 255)::int);
-  rand_bytes := set_byte(rand_bytes, 1, ((unix_ts_ms >> 32) & 255)::int);
-  rand_bytes := set_byte(rand_bytes, 2, ((unix_ts_ms >> 24) & 255)::int);
-  rand_bytes := set_byte(rand_bytes, 3, ((unix_ts_ms >> 16) & 255)::int);
-  rand_bytes := set_byte(rand_bytes, 4, ((unix_ts_ms >> 8) & 255)::int);
-  rand_bytes := set_byte(rand_bytes, 5, (unix_ts_ms & 255)::int);
-
-  rand_bytes := set_byte(rand_bytes, 6, (get_byte(rand_bytes, 6) & 15) | 112);
-  rand_bytes := set_byte(rand_bytes, 8, (get_byte(rand_bytes, 8) & 63) | 128);
-
-  RETURN encode(rand_bytes, 'hex')::uuid;
-END
+  SELECT (
+    -- 48-bit big-endian Unix millisecond timestamp, 12 hex characters.
+    lpad(to_hex((floor(extract(epoch FROM clock_timestamp()) * 1000)::bigint)), 12, '0')
+    -- RFC 9562 version 7 in the high nibble, then 12 random bits.
+    || '7' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 3)
+    -- RFC 4122 variant in the top two bits (8,9,a,b), then 12 random bits.
+    || substr('89ab', 1 + floor(random() * 4)::int, 1)
+    || substr(replace(gen_random_uuid()::text, '-', ''), 1, 3)
+    -- 48 random bits.
+    || substr(replace(gen_random_uuid()::text, '-', ''), 1, 12)
+  )::uuid
 $$;
 
 COMMENT ON FUNCTION app_uuid_v7() IS
